@@ -11,8 +11,13 @@
    // stimulus support, and Verilator config.
    m4_makerchip_module   // (Expanded in Nav-TLV pane.)
 \TLV
-   $reset = *reset;
-   $num[31:0] = $reset? 0 :  (>>1$num+1);
+   |count
+      @0   
+        $reset = *reset;
+ 
+   
+      @1
+         $num[31:0] = $reset? 0 :  (>>1$num+1);
    //...
 
    // Assert these to end simulation (before Makerchip cycle limit).
