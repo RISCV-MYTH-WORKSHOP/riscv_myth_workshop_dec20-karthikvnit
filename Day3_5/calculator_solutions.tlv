@@ -21,7 +21,7 @@
       @1
          $val2[31:0]  = $rand2[3:0];
         // $op[1:0]     = $rand1[1:0];
-         $valid = $reset? 0 :  (>>1$valid+1);
+         $valid = ($reset)? 0 :  (>>1$valid+1);
          
          $val1[31:0]  =  >>2$out;            
                    
@@ -33,11 +33,19 @@
             
       @2
          $valid_reset = ($reset || (!($valid)));   
-         $out[31:0]  = $valid_reset ? 0 : ($op[1] ? ($op[0] ? $sum : $sub): ($op[0] ? $mul : $quotient )); 
+         $mem[31:0]   = ($reset)?  0 : (($op[2:0] == 3'b101)?  $val1 : >>2$mem) ;
+         $out[31:0]   =  ($reset)? 32'b0 :
+                         ($op[2:0] == 3'b000)? $quotient :
+                         ($op[2:0] == 3'b001)? $mul :
+                         ($op[2:0] == 3'b010)? $sub :
+                         ($op[2:0] == 3'b011)? $sum :
+                         ($op[2:0] == 3'b100)? >>2$mem : >>2$out ;  
 
-  // m4+cal_viz(@2) // Arg: Pipeline stage represented by viz, should be atleast equal to last stage of CALCULATOR logic.           
+   m4+cal_viz(@2) // Arg: Pipeline stage represented by viz, should be atleast equal to last stage of CALCULATOR logic.           
       // Assert these to end simulation (before Makerchip cycle limit).
    *passed = *cyc_cnt > 40;
    *failed = 1'b0;
 \SV
    endmodule
+
+
