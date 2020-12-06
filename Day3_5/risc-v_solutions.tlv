@@ -40,7 +40,7 @@
    |cpu
       @0
          $reset = *reset;
-         $pc [31:0] = >>1$reset? 32'b0 : >>1$pc + 32'd4 ;
+         $pc [31:0] = >>1$reset? 32'b0 : >>1$taken_br? >>1$br_tgt_pc  : >>1$pc + 32'd4 ;
          $imem_rd_addr[M4_IMEM_INDEX_CNT-1 : 0] = $pc[M4_IMEM_INDEX_CNT+1 : 2];
          $imem_rd_en   = !$reset; 
       @1   
@@ -114,18 +114,31 @@
          $is_srl = $dec_bits ==? 11'b0_101_0110011;
          $is_sra = $dec_bits ==? 11'b1_101_0110011;
          // Register file read
-         $rf_wr_en  = 1'b0;
+         
          $rf_rd_en1 = $rs1_valid;
          $rf_rd_en2 = $rs2_valid;
-         $rf_wr_index[4:0] = 5'b0;
          $rf_rd_index1[4:0] = $rs1;
          $rf_rd_index2[4:0] = $rs2; 
-         $rf_wr_data[31:0]  = 32'b0;
          $src1_value[31:0]  = $rf_rd_data1;
          $src2_value[31:0]  = $rf_rd_data2;
          // ALU
          $result[31:0] = $is_addi ? $src1_value + $imm : 
                          $is_add  ? $src1_value + $src2_value : 32'bx; 
+         //Register file write
+         $rf_wr_en  = $rd_valid;
+         $rf_wr_index[4:0] = $rd;
+         $rf_wr_data[31:0]  = $rd == 5'b0 ? 32'b0 : $result;
+         //branching
+         
+         $taken_br = $is_beq ? ($src1_value == $src2_value):
+                         $is_bne ? ($src1_value != $src2_value):
+                         $is_blt ? (($src1_value < $src2_value) ^ ($src1_value[31] != $src2_value[31])):
+                         $is_bge ? (($src1_value >= $src2_value) ^ ($src1_value[31] != $src2_value[31])):
+                         $is_bltu ? ($src1_value < $src2_value):
+                         $is_bgeu ? ($src1_value >= $src2_value):
+                                    1'b0;
+         $br_tgt_pc[31:0] = $pc + $imm ;
+         
          
           
           
