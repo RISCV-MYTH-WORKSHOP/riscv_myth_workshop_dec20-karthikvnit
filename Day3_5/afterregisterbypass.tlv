@@ -43,8 +43,8 @@
          $pc [31:0] = >>1$reset? 32'b0 : >>3$valid_taken_br? >>3$br_tgt_pc  : >>3$pc + 32'd4 ;
          $imem_rd_addr[M4_IMEM_INDEX_CNT-1 : 0] = $pc[M4_IMEM_INDEX_CNT+1 : 2];
          $imem_rd_en   = !$reset; 
-         $start = ($reset == 0 && >>1$reset == 1)? 1 :1'b0 ;
-         $valid = $reset? 1'b0 : $start? 1'b1: >>3$valid;
+        // $start = ($reset == 0 && >>1$reset == 1)? 1 :1'b0 ;
+      
       @1   
          $instr[31:0]  = $imem_rd_data[31:0];
          $is_u_instr = $instr[6:2] ==? 5'b0x101;
@@ -115,6 +115,7 @@
          $is_sltu = $dec_bits ==? 11'b0_011_0110011;
          $is_srl = $dec_bits ==? 11'b0_101_0110011;
          $is_sra = $dec_bits ==? 11'b1_101_0110011;
+         $is_load = $opcode  ==? 7'b0000011;
       @2
          //registerfile read
          $rf_rd_en1 = $rs1_valid;
@@ -139,7 +140,7 @@
                                     1'b0;              
          
          $valid_taken_br  = $valid && $taken_br ;                           
-      @4 
+         $valid = !(>>1$valid_taken_branch || >>2$valid_taken_branch); 
          // Register file write
          $rf_wr_en  = $rd_valid && $valid ;
          $rf_wr_index[4:0] = $rd ;
@@ -173,7 +174,7 @@
       m4+rf(@2, @3)  // Args: (read stage, write stage) - if equal, no register bypass is required
       //m4+dmem(@4)    // Args: (read/write stage)
    
-  // m4+cpu_viz(@2)    // For visualisation, argument should be at least equal to the last stage of CPU logic
+   //m4+cpu_viz(@4)    // For visualisation, argument should be at least equal to the last stage of CPU logic
                        // @4 would work for all labs
 \SV
    endmodule
