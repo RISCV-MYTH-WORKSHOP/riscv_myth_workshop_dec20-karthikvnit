@@ -40,11 +40,11 @@
    |cpu
       @0
          $reset = *reset;
-         $pc [31:0] = >>1$reset? 32'b0 : >>3$valid_taken_br? >>3$br_tgt_pc  : >>1$pc + 32'd4 ;
+         $pc [31:0] = >>1$reset? 32'b0 : >>3$valid_taken_branch? >>3$br_tgt_pc  : >>1$pc + 32'd4 ;
          
         // $start = ($reset == 0 && >>1$reset == 1)? 1 :1'b0 ;
       @3
-         $valid = !(>>1$valid_taken_branch || >>2$valid_taken_branch); 
+         $valid = !(>>1$valid_taken_branch || >>2$valid_taken_branch || >> || ); 
       
       @1 
          //FETCH
@@ -147,6 +147,7 @@
                          $is_bltu ? ($src1_value < $src2_value):
                          $is_bgeu ? ($src1_value >= $src2_value):
                                     1'b0;
+         $valid_taken_branch = $valid && $taken_br;                           
                                     
       @3 //register file write  
          $rf_wr_en  = $rd_valid && $valid ;
