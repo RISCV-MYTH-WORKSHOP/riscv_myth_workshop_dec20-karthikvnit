@@ -40,11 +40,18 @@
    |cpu
       @0
          $reset = *reset;
-         $pc [31:0] = >>1$reset? 32'b0 : >>1$taken_br? >>1$br_tgt_pc  : >>1$pc + 32'd4 ;
+         $pc [31:0] = >>1$reset? 32'b0 : >>3$valid_taken_br? >>3$br_tgt_pc  : >>1$pc + 32'd4 ;
+         
+        // $start = ($reset == 0 && >>1$reset == 1)? 1 :1'b0 ;
+      @3
+         $valid = !(>>1$valid_taken_branch || >>2$valid_taken_branch); 
+      
+      @1 
+         //FETCH
          $imem_rd_addr[M4_IMEM_INDEX_CNT-1 : 0] = $pc[M4_IMEM_INDEX_CNT+1 : 2];
          $imem_rd_en   = !$reset; 
-      @1   
          $instr[31:0]  = $imem_rd_data[31:0];
+         //decode
          $is_u_instr = $instr[6:2] ==? 5'b0x101;
          $is_s_instr = $instr[6:2] ==? 5'b0100x;
          $is_r_instr = $instr[6:2] ==? 5'b01011 ||
@@ -64,26 +71,8 @@
                        $is_b_instr? { {{20{$instr[31]}} , $instr[7] , {$instr[30:25]} , {$instr[11:8]} , 1'b0 }} :
                        $is_u_instr? { {$instr[31:20]} , {$instr[19:12]}   , 12'b0} :
                        $is_j_instr? { {{12{$instr[31]}} , $inst[19:12] , $inst[20]  , {$instr[30:25]} , {$instr[24:21]} , 1'b0}} :
-                       32'b0;
-         $rs2_valid = $is_r_instr || $is_s_instr || $is_b_instr;
-         ?$rs2_valid
-            $rs2[4:0]    =  $instr[24:20];
-         $rs1_valid = $is_r_instr || $is_s_instr || $is_b_instr || $is_i_instr;
-         ?$rs1_valid
-            $rs1[4:0]    =  $instr[19:15];
-         $funct3_valid =  $is_r_instr || $is_s_instr || $is_b_instr || $is_i_instr;
-         ?$funct3_valid
-            $funct3[2:0] = $instr[14:12];
-         $funct7_valid =  $is_r_instr ;
-         ?$funct7_valid   
-            $funct7[6:0] = $instr[31:25];
-         $opcode_valid = $is_r_instr || $is_s_instr || $is_b_instr || $is_i_instr || $is_u_instr || $is_j_instr;
-         ?$opcode_valid
-            $opcode[6:0] = $instr[6:0];
-         $rd_valid = $is_r_instr ||  $is_i_instr || $is_u_instr || $is_j_instr;
-         ?$rd_valid
-            $rd[4:0]    = $instr[11:7];
-         ///
+                       32'b0;              
+         `BOGUS_USE($imm)
          $dec_bits[10:0] = {$funct7[5] , $funct3 , $opcode};
          // Branch Instruction
          $is_beq = $dec_bits ==? 11'bx_000_1100011;
@@ -113,23 +102,44 @@
          $is_sltu = $dec_bits ==? 11'b0_011_0110011;
          $is_srl = $dec_bits ==? 11'b0_101_0110011;
          $is_sra = $dec_bits ==? 11'b1_101_0110011;
-         // Register file read
-         
+         $is_load = $opcode  ==? 7'b0000011;
+      @2
+         //registerfile read
          $rf_rd_en1 = $rs1_valid;
          $rf_rd_en2 = $rs2_valid;
          $rf_rd_index1[4:0] = $rs1;
          $rf_rd_index2[4:0] = $rs2; 
-         $src1_value[31:0]  = $rf_rd_data1;
-         $src2_value[31:0]  = $rf_rd_data2;
-         // ALU
-         $result[31:0] = $is_addi ? $src1_value + $imm : 
-                         $is_add  ? $src1_value + $src2_value : 32'bx; 
-         //Register file write
-         $rf_wr_en  = $rd_valid;
-         $rf_wr_index[4:0] = $rd;
-         $rf_wr_data[31:0]  = $rd == 5'b0 ? 32'b0 : $result;
-         //branching
-         
+         //$src1_value[31:0]  = ((>>1$rf_wr_en)? && (>>1$rf_wr_index == $rf_rd_index1)?)   >>1$result  : $rf_rd_data1;
+         //$src2_value[31:0]  = (>>1$rf_wr_en)? && (>>1$rf_wr_index == $rf_rd_index2)?   >>1$result  : $rf_rd_data2;
+         $br_tgt_pc[31:0] = $pc + $imm ;   
+      @3
+         //ALU 
+         $sltu_rslt[31:0] = $src1_value < $src2_value ;
+         $sltiu_rslt[31:0]  = $src1_value < $imm ;
+         $result[31:0] = $is_andi ? $src1_value & $imm :
+                         $is_ori ? $src1_value | $imm :
+                         $is_xori ? $src1_value ^ $imm :
+                         ($is_addi || $is_load || $is_s_instr) ? $src1_value + $imm :
+                         $is_slli ? $src1_value << $imm[5:0] :
+                         $is_srli ? $src1_value >> $imm[5:0] :
+                         $is_and ? $src1_value & $src2_value :
+                         $is_or ? $src1_value | $src2_value :
+                         $is_xor ? $src1_value ^ $src2_value :
+                         $is_add ? $src1_value + $src2_value :
+                         $is_sub ? $src1_value - $src2_value :
+                         $is_sll ? $src1_value << $src2_value[4:0] :
+                         $is_srl ? $src1_value >> $src2_value[4:0] :
+                         $is_sltu ? $src1_value | $src2_value :
+                         $is_sltiu ? $src1_value < $imm :
+                         $is_lui ? {$imm[31:12], 12'b0} :
+                         $is_auipc ? $pc + $imm :
+                         $is_jal ? $pc + 4 :
+                         $is_jalr ? $pc + 4 :
+                         $is_srai ? {{32{$src1_value[31]}}, $src1_value} >> $imm[4:0] :
+                         $is_slt ? ($src1_value[31] == $src2_value[31]) ? $sltu_rslt : {31'b0, $src1_value[31]} :
+                         $is_slti ? ($src1_value[31] == $imm[31]) ? $sltiu_rslt : {31'b0, $src1_value[31]} :
+                         $is_sra ? {{32{$src1_value[31]}}, $src1_value} > $src2_value[4:0] :
+                         32'bx ;
          $taken_br = $is_beq ? ($src1_value == $src2_value):
                          $is_bne ? ($src1_value != $src2_value):
                          $is_blt ? (($src1_value < $src2_value) ^ ($src1_value[31] != $src2_value[31])):
@@ -137,18 +147,15 @@
                          $is_bltu ? ($src1_value < $src2_value):
                          $is_bgeu ? ($src1_value >= $src2_value):
                                     1'b0;
-         $br_tgt_pc[31:0] = $pc + $imm ;
-         
-         
-          
-          
-          
-          
-          //`BOGUS_USE($is_beq $is_bne $is_blt $is_bge $is_bltu $is_bgeu)
-         
-         
-                       
-         
+                                    
+      @3 //register file write  
+         $rf_wr_en  = $rd_valid && $valid ;
+         $rf_wr_index[4:0] = $rd ;
+         $rf_wr_data[31:0]  = $rd == 5'b0 ? 32'b0 : $result ;
+      @2
+         $src1_value[31:0]  = ((>>1$rf_wr_en == 1'b1)  && (>>1$rf_wr_index == $rf_rd_index1))?   >>1$result  : $rf_rd_data1;
+         $src2_value[31:0]  = ((>>1$rf_wr_en) && (>>1$rf_wr_index == $rf_rd_index2))?   >>1$result  : $rf_rd_data2;
+        
          
          
 
@@ -171,10 +178,10 @@
    //  o CPU visualization
    |cpu
       m4+imem(@1)    // Args: (read stage)
-      m4+rf(@1, @1)  // Args: (read stage, write stage) - if equal, no register bypass is required
+      m4+rf(@2, @3)  // Args: (read stage, write stage) - if equal, no register bypass is required
       //m4+dmem(@4)    // Args: (read/write stage)
    
-   m4+cpu_viz(@2)    // For visualisation, argument should be at least equal to the last stage of CPU logic
+   //m4+cpu_viz(@4)    // For visualisation, argument should be at least equal to the last stage of CPU logic
                        // @4 would work for all labs
 \SV
    endmodule
