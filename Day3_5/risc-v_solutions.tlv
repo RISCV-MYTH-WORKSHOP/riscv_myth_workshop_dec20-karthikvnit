@@ -32,6 +32,9 @@
    m4_asm(ADDI, r13, r13, 1)            // Increment intermediate register by 1
    m4_asm(BLT, r13, r12, 1111111111000) // If a3 is less than a2, branch to label named <loop>
    m4_asm(ADD, r10, r14, r0)            // Store final result to register a0 so that it can be read by main program
+   m4_asm(SW, r0, r10, 10000)           // Store the final result value to byte address 16
+   m4_asm(LW, r17, r0, 10000)           // Load the final result value from adress 16 to x17
+   
    
    // Optional:
    // m4_asm(JAL, r7, 00000000000000000000) // Done. Jump to itself (infinite loop). (Up to 20-bit signed immediate plus implicit 0 bit (unlike JALR) provides byte address; last immediate bit should also be 0)
@@ -42,10 +45,11 @@
          $reset = *reset;
          $pc [31:0] = >>1$reset? 32'b0 : >>3$valid_taken_branch? >>3$br_tgt_pc  : >>3$valid_load? >>3$pc + 32'd4  :  
                        (>>3$valid_jump && >>3$is_jal) ? >>3$br_tgt_pc :
-                        (>>3$valid_jump && >>3$is_jalr) ? >>3$jalr_tgt_pc : >>1$inc_pc;
+                        (>>3$valid_jump && >>3$is_jalr) ? >>3$jalr_target_pc : >>1$inc_pc;
         // $start = ($reset == 0 && >>1$reset == 1)? 1 :1'b0 ;
       @3
-         $valid = !(>>1$valid_taken_branch || >>2$valid_taken_branch || >>1$valid_load || >>2$valid_load ); 
+         $valid = !(>>1$valid_taken_branch || >>2$valid_taken_branch || >>1$valid_load || >>2$valid_load ||  
+                    >>1$valid_jump || >>2$valid_jump); 
       
       @1 
          $inc_pc[31:0] = $pc + 32'd4;  
@@ -75,6 +79,27 @@
                        $is_j_instr? { {{12{$instr[31]}} , $inst[19:12] , $inst[20]  , {$instr[30:25]} , {$instr[24:21]} , 1'b0}} :
                        32'b0;              
          `BOGUS_USE($imm)
+         $opcode[6:0] = $instr[6:0];
+         $rs2_valid = $is_r_instr || $is_s_instr || $is_b_instr;
+         ?$rs2_valid
+            $rs2[4:0]    =  $instr[24:20];
+         $rs1_valid = $is_r_instr || $is_s_instr || $is_b_instr || $is_i_instr;
+         ?$rs1_valid
+            $rs1[4:0]    =  $instr[19:15];
+         $funct3_valid =  $is_r_instr || $is_s_instr || $is_b_instr || $is_i_instr;
+         ?$funct3_valid
+            $funct3[2:0] = $instr[14:12];
+         $funct7_valid =  $is_r_instr ;
+         ?$funct7_valid   
+            $funct7[6:0] = $instr[31:25];
+         $opcode_valid = $is_r_instr || $is_s_instr || $is_b_instr || $is_i_instr || $is_u_instr || $is_j_instr;
+         ?$opcode_valid
+            $opcode[6:0] = $instr[6:0];
+         $rd_valid = $is_r_instr ||  $is_i_instr || $is_u_instr || $is_j_instr;
+         ?$rd_valid
+            $rd[4:0]    = $instr[11:7];
+         
+      @2   
          $dec_bits[10:0] = {$funct7[5] , $funct3 , $opcode};
          $is_beq = $dec_bits ==? 11'bx_000_1100011;
          $is_bne = $dec_bits ==? 11'bx_001_1100011;
@@ -108,8 +133,8 @@
          $is_auipc = $dec_bits ==? 11'bx_xxx_0010111;
          $is_andi = $dec_bits ==? 11'bx_111_0010011;
          $is_and = $dec_bits ==? 11'b0_111_0110011;
-         $is_load = $opcode == 7'b0000011;
-          
+         $is_load = $opcode ==? 7'b0000011;
+                  
          //$jalr_target_pc[31:0] = $src1_value +$imm ;
       @2
          //registerfile read
@@ -121,6 +146,7 @@
          //$src2_value[31:0]  = (>>1$rf_wr_en)? && (>>1$rf_wr_index == $rf_rd_index2)?   >>1$result  : $rf_rd_data2;
          $br_tgt_pc[31:0] = $pc + $imm ;   
       @3
+         $is_jump = $is_jal || $is_jalr ;
          //ALU 
          $sltu_rslt[31:0] = $src1_value < $src2_value ;
          $sltiu_rslt[31:0]  = $src1_value < $imm ;
@@ -148,6 +174,7 @@
                          $is_slti ? ($src1_value[31] == $imm[31]) ? $sltiu_rslt : {31'b0, $src1_value[31]} :
                          $is_sra ? {{32{$src1_value[31]}}, $src1_value} > $src2_value[4:0] :
                          32'bx ;
+         
          $taken_br = $is_beq ? ($src1_value == $src2_value):
                          $is_bne ? ($src1_value != $src2_value):
                          $is_blt ? (($src1_value < $src2_value) ^ ($src1_value[31] != $src2_value[31])):
@@ -157,10 +184,12 @@
                                     1'b0;
          $valid_taken_branch = $valid && $taken_br;                           
          $valid_load = $valid && $is_load;
-         $is_jump = $is_jal || $is_jalr ;
+         
          $valid_jump = $is_jump && $valid ;
+         $jalr_target_pc[31:0] = $src1_value +$imm ;
       @3 //register file write  
-         $rf_wr_en  = ($rd_valid && $valid ) || >>2$valid_load ;
+         
+         $rf_wr_en  = ($rd_valid && $valid && $rd != 5'b0 ) || >>2$valid_load ;
          //$rf_wr_data[31:0]  = $rd == 5'b0 ? 32'b0 : $result ;
       @2
          $src1_value[31:0]  = ((>>1$rf_wr_en == 1'b1)  && (>>1$rf_wr_index == $rf_rd_index1))?   >>1$result  : $rf_rd_data1;
@@ -168,15 +197,14 @@
       @3
          //Load data
          $rf_wr_index[4:0] = >>2$valid_load ? >>2$rd : $rd;
-         $rf_wr_data[31:0] =  ($rd == 5'b0) ? 32'b0 : 
-                              (!>>2$valid_load)? >>2$ld_data : $result  ;
+         $rf_wr_data[31:0] = (>>2$valid_load)? >>2$ld_data : $result  ;
       @4
          $dmem_addr[3:0]      = $result[5:2]   ;
          $dmem_wr_en          = $is_s_instr && $valid ;               
          $dmem_rd_en          = $is_load             ;
          $dmem_wr_data [31:0] = $src2_value    ; 
       @5
-         $ld_data [31:0] = $dmem_rd_data [31:0] ; 
+         $ld_data [31:0] = $dmem_rd_data  ; 
 
       // YOUR CODE HERE
       // ...
@@ -185,6 +213,16 @@
       //       be sure to avoid having unassigned signals (which you might be using for random inputs)
       //       other than those specifically expected in the labs. You'll get strange errors for these.
 
+         
+      @2
+         
+         //TESTBENCH
+         *passed = |cpu/xreg[17]>>5$value == (1+2+3+4+5+6+7+8+9) ;
+         
+         
+      // Note: Because of the magic we are using for visualisation, if visualisation is enabled below,
+      //       be sure to avoid having unassigned signals (which you might be using for random inputs)
+      //       other than those specifically expected in the labs. You'll get strange errors for these.
    
    // Assert these to end simulation (before Makerchip cycle limit).
    *passed = *cyc_cnt > 40;
@@ -200,7 +238,7 @@
       m4+rf(@2, @3)  // Args: (read stage, write stage) - if equal, no register bypass is required
       m4+dmem(@4)    // Args: (read/write stage)
    
-   //m4+cpu_viz(@3)    // For visualisation, argument should be at least equal to the last stage of CPU logic
+   m4+cpu_viz(@4)    // For visualisation, argument should be at least equal to the last stage of CPU logic
                        // @4 would work for all labs
 \SV
    endmodule
