@@ -1,4 +1,4 @@
-# RISC-V_MYTH_Workshop
+# A MICRO ARCHITECTURE TO IMPLEMENT RV32I Instruction set  
 
 
 Summary:
