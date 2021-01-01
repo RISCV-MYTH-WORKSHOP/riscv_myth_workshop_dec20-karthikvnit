@@ -1,5 +1,7 @@
 # A MICRO ARCHITECTURE TO IMPLEMENT RV32I Instruction set  
 
+RISC-V is a free and open ISA enabling a new era of processor innovation through open standard collaboration. 
+
 
 Summary:
 The complete implementation of sequential calculator has been done and also the  pipelining has been implemented on it
