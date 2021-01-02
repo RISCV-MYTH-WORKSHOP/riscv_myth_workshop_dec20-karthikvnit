@@ -16,7 +16,31 @@ Application Binary Interface: Some parts of ISA  can be directly accessed by use
 
 Sum of 1 to n natural numbers has been implemented using ABI concept. Please go through the Day2 folder documentation for more details. 
 
+#  MAKERCHIP, TL VERILOG & DIGITAL DESIGN: 
 
+Introduction to TL Verilog:
+
+Transaction Level Verilog or TL-Verilog is an extension to existing Verilog HDL and a huge step forward in coding HDL languages. TL-Verilog supports "timing abstraction" or pipelining as a fundamental language construct. Pipelines provide context for sequential logic. TL-V eliminates the need to code sequential elements, such as flip-flops, explicitly. With the below TL-Verilog constructs, half of the content in  Verilog/SystemVerilog books becomes obsolete.
+
+Combinational and Sequential Logic: $signals and expressions
+
+Pipelines: |pipelines and @stages
+
+Validity: ?$valid
+
+Pipeline interactions: >>alignment
+
+Hierarchy: /hierarchy
+
+State: $State
+
+Transaction Flows: $ANY
+
+File Structure: \SV, \SV_plus, \TLV, \TLV_version
+
+Introduction to Makerchip:
+  
+   Makerchip is a free online environment by Redwood EDA for developing high-quality integrated circuits. The online platform can be used to code, compile, simulate and debug Verilog designs all in just one tool
 
 
 
@@ -25,3 +49,6 @@ Summary:
 The complete implementation of sequential calculator has been done and also the  pipelining has been implemented on it
 The complete implementation of riscv has been done and problems of readwrite hazard and branch hazard and load hazard had been addressed.
 The codes can be seen in  Day3-5 and Day2 folder
+
+
+
