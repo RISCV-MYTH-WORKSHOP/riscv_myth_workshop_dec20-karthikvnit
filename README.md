@@ -40,7 +40,9 @@ File Structure: \SV, \SV_plus, \TLV, \TLV_version
 
 Introduction to Makerchip:
   
-   Makerchip is a free online environment by Redwood EDA for developing high-quality integrated circuits. The online platform can be used to code, compile, simulate and debug Verilog designs all in just one tool
+   Makerchip is a free online environment by Redwood EDA for developing high-quality integrated circuits. The online platform can be used to code, compile, simulate and debug Verilog designs all in just one tool.
+   
+The sequential and combinational calculator and riscv design has been designed in MakerChip IDE. The codes and screenshots are captured in the Day3-5 folders and also the screenshot documents.
 
 
 
