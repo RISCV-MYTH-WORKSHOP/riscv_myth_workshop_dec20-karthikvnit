@@ -17,7 +17,7 @@ Spike is the golden reference functional RISC-V ISA C++ sofware simulator. It se
 
 
 
-Sum of 1 to n natural numbers has been implemented using ABI concept. Please go through the Day2 folder documentation for more details. 
+Sum of 1 to n natural numbers has been implemented using ABI concept. Please go through the Day2 folder documentation for more details [here](https://github.com/RISCV-MYTH-WORKSHOP/riscv_myth_workshop_dec20-karthikvnit/blob/master/Day2/github2.docx). 
 
 #  MAKERCHIP, TL VERILOG & DIGITAL DESIGN: 
 
