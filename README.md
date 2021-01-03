@@ -54,7 +54,7 @@ The modelling of D flipflop is that it passes next state value to current state 
 By using the above principle we model circuit diagram of fibonacci series. The circuit diagram of fibonacciseries is shown below:
 ![fibonacciseries](fibonacciseries.PNG)
 
-The TL verilog code has been written as below in makerchip IDE platform. There is no flipflop coding done here. 
+The TL verilog code has been written as below in makerchip IDE platform. There is no flipflop coding done here. There is a pipeline concept used and there are multiple stages in it.
 
 ![tlverilog](tlverilog.PNG)
 
