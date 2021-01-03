@@ -59,6 +59,8 @@ The TL verilog code has been written as below in makerchip IDE platform. There i
 ![tlverilog](tlverilog.PNG)
 ![waveform](waveform.PNG)
 
+The below image shows the sv generated code by platform.
+![sv1](sv1.PNG)
 The sequential and combinational calculator and riscv design has been designed in MakerChip IDE. The codes and screenshots are captured in the Day3-5 folders and also the screenshot documents.
 
 
