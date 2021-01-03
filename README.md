@@ -53,6 +53,10 @@ The modelling of D flipflop is that it passes next state value to current state 
 
 The circuit diagram of fibonacciseries is shown below:
 ![fibonacciseries](fibonacciseries.PNG)
+
+The TL verilog code has been written as below in makerchip IDE platform:
+![tlverilog](tlverilog.PNG)
+
    
 The sequential and combinational calculator and riscv design has been designed in MakerChip IDE. The codes and screenshots are captured in the Day3-5 folders and also the screenshot documents.
 
