@@ -57,8 +57,8 @@ By using the above principle we model circuit diagram of fibonacci series. The c
 The TL verilog code has been written as below in makerchip IDE platform. There is no flipflop coding done here. There is a pipeline concept used and there are multiple stages in it.
 
 ![tlverilog](tlverilog.PNG)
+![waveform](waveform.PNG)
 
-   
 The sequential and combinational calculator and riscv design has been designed in MakerChip IDE. The codes and screenshots are captured in the Day3-5 folders and also the screenshot documents.
 
 
