@@ -51,7 +51,8 @@ File Structure: \SV, \SV_plus, \TLV, \TLV_version
 The modelling of D flipflop is that it passes next state value to current state on rising clock edge.
 ![flipflop](flipflop.PNG)
 
-   
+The circuit diagram of fibonacciseries is shown below:
+![fibonacciseries](fibonacciseries.PNG)
    
 The sequential and combinational calculator and riscv design has been designed in MakerChip IDE. The codes and screenshots are captured in the Day3-5 folders and also the screenshot documents.
 
