@@ -45,6 +45,12 @@ File Structure: \SV, \SV_plus, \TLV, \TLV_version
   
    Makerchip is a free online environment by Redwood EDA for developing high-quality integrated circuits. The online platform can be used to code, compile, simulate and debug Verilog designs all in just one tool. What is so special about TL-V is its integration with SandPiper. SandPiper is a code generator which converts code written in TL_Verilog code to a well-structured SystemVerilog code. Below is the code generated for riscv core:
 ![sv](sv.PNG)    
+
+# Example of Fibonacci series to analyze the advantage of TL Verilog:
+
+The modelling of D flipflop is that it passes next state value to current state on rising clock edge.
+
+
    
    
 The sequential and combinational calculator and riscv design has been designed in MakerChip IDE. The codes and screenshots are captured in the Day3-5 folders and also the screenshot documents.
