@@ -49,7 +49,7 @@ File Structure: \SV, \SV_plus, \TLV, \TLV_version
 # Example of Fibonacci series to analyze the advantage of TL Verilog:
 
 The modelling of D flipflop is that it passes next state value to current state on rising clock edge.
-
+![flipflop](flipflop.PNG)
 
    
    
