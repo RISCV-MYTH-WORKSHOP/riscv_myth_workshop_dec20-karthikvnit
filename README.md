@@ -12,7 +12,7 @@ Spike Simulator:
 Spike is the golden reference functional RISC-V ISA C++ sofware simulator. It serves as a starting point for running software on a RISC-V target. Sum of 1st n natural numbers has been taken as an example and all the steps are clearly documented in Day2 folder.
 
 Application Binary Interface: Some parts of ISA  can be directly accessed by user and OS via system calls. If application programmer wants to access hardware he should do this through the registers. Sum of 1 to n natural numbers coding has been done using the concept of Application Binary Interface. RISCV has 32 registers. For RV32 the width of registers is 32, where as for RV64 it is 64. The data can be loaded from memory to registers or directly sent, Application programmer can access each of these 32 registers through its ABI name. 
-![applicationbinaryinterface](applicationbinaryinterface) 
+![applicationbinaryinterface](applicationbinaryinterface.png) 
 
 
 
