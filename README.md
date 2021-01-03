@@ -51,10 +51,11 @@ File Structure: \SV, \SV_plus, \TLV, \TLV_version
 The modelling of D flipflop is that it passes next state value to current state on rising clock edge.
 ![flipflop](flipflop.PNG)
 
-The circuit diagram of fibonacciseries is shown below:
+By using the above principle we model circuit diagram of fibonacci series. The circuit diagram of fibonacciseries is shown below:
 ![fibonacciseries](fibonacciseries.PNG)
 
-The TL verilog code has been written as below in makerchip IDE platform:
+The TL verilog code has been written as below in makerchip IDE platform. There is no flipflop coding done here. 
+
 ![tlverilog](tlverilog.PNG)
 
    
