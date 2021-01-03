@@ -63,7 +63,7 @@ The below image shows the sv generated code by platform. The additional flipflop
 
 ![sv1](sv1.PNG)
 
-The sequential and combinational calculator and riscv design has been designed in MakerChip IDE. The codes and screenshots are captured in the Day3-5 folders and also the screenshot documents.
+The sequential and combinational calculator and riscv design has been designed in MakerChip IDE. The codes  are captured in the Day3-5 folders and the step by step implementation of calculator can be found [here](https://github.com/RISCV-MYTH-WORKSHOP/riscv_myth_workshop_dec20-karthikvnit/blob/master/day3calculatorcodesnapshots.docx).
 
 
 
